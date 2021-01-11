@@ -1,0 +1,11 @@
+{
+	"name": "Whisk-Cooks Illustrated Integration",
+	"version": "1.0",
+	"description": "Saves recipes from cooksillustrated.com to Whisk",
+	"background": {
+		"scripts": ["background.js"],
+		"persistent": false
+	},
+	"permissions": ["storage"],
+	"manifest_version": 2
+}
