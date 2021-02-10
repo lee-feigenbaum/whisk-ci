@@ -1,13 +1,22 @@
+'use strict';
+
+// Basic infrastructure for extension background page, including
+// installation bootstrapping & utility functions
+
 chrome.runtime.onInstalled.addListener(function() {
-	console.log("*** onInstalled");
-	//chrome.storage.sync.set({color: '#3aa757'}, function() {
-	//	console.log("The color is green, yo.");
-	//});
+	console.log("BACKGROUND onInstalled");
+
+	// Uncomment and put an actual value in and run once to
+	// seed local storage value - booooo companies unwilling to
+	// grant an OAuth client ID to non-commercial developers
+	//chromeLocalStorageSetAsync({"whisk_bearer_token": ""});
+
+	console.log("stored bearer token value");
 
 	// Register declarative rules for the onPageChanged event that check
 	// if the page is one of the ones we want this to be active on and use
 	// ShowPageAction to enable the extension button if so
-	chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
+	chrome.declarativeContent.onPageChanged.removeRules(undefined, async function() {
 		chrome.declarativeContent.onPageChanged.addRules([{
 			conditions: [
 				new chrome.declarativeContent.PageStateMatcher({
@@ -20,26 +29,58 @@ chrome.runtime.onInstalled.addListener(function() {
 					pageUrl: {hostSuffix: 'cookscountry.com', pathPrefix: '/recipes/'}
 				})
 			],
-			actions: [new chrome.declarativeContent.ShowPageAction()]
+			actions: [
+				new chrome.declarativeContent.SetIcon({
+		         imageData: {
+		           16: await loadImageData('images/Orion_balloon-whisk-16.png'),
+							 32: await loadImageData('images/Orion_balloon-whisk-32.png'),
+							 48: await loadImageData('images/Orion_balloon-whisk-48.png'),
+		         },
+		    }),
+				new chrome.declarativeContent.ShowPageAction()
+			]
 		}])
 	});
 });
 
-chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
-	console.log("*** BACKGROUND received %o from %o, frame", msg, sender.tab, sender.frameId);
-	sendResponse("OK");
-});
-
-function runTest(element) {
-  console.log("*** BACKGROUND finding active tab and sending message");
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    console.log("*** BACKGROUND sending message to tab %o", tabs[0].id);
-    chrome.tabs.sendMessage(
-			tabs[0].id,
-			{message: "TEST MESSAGE"},
-			function(response) {
-				console.log("*** BACKGROUND received response: %o", response);
-			}
-		);
+// Credit to https://stackoverflow.com/questions/64473519/how-to-disable-gray-out-page-action-for-chrome-extension
+function loadImageData(url) {
+  return new Promise(resolve => {
+    const canvas = document.body.appendChild(document.createElement('canvas'));
+    const context = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      context.drawImage(img, 0, 0);
+      const data = context.getImageData(0, 0, img.width, img.height);
+      canvas.remove();
+      resolve(data);
+    };
+    img.src = url;
   });
-};
+}
+
+async function handleLoadRecipe(msg) {
+	if (msg.message == 'LoadRecipe' && msg.recipe_id) {
+		const recipe_id = msg.recipe_id;
+		console.log("*** BACKGROUND loading recipe %o from local storage", recipe_id);
+		const factory = new LocalStorageRecipeFactory();
+		const recipe = await factory.load(recipe_id);
+		console.log("*** BACKGROUND responding to message with loaded recipe %o", recipe);
+		return recipe;
+	} else {
+		throw("Invalid message passed to handleLoadRecipe");
+	}
+}
+
+chrome.runtime.onMessage.addListener(
+	(msg, sender, sendResponse) => {
+		console.log("*** BACKGROUND received %o from %o, frame", msg, sender.tab, sender.frameId);
+		if (msg.message == 'LoadRecipe') {
+			handleLoadRecipe(msg).then(sendResponse);
+			return true;
+		} else if (msg.message == 'PopupInfo') {
+			// don't do anything or send any response - this is for the popup JS if
+			// it's listening
+		}
+	}
+);

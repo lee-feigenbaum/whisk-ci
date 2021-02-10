@@ -3,30 +3,35 @@
 	"version": "1.0",
 	"description": "Saves recipes from cooksillustrated.com and other CI properties to Whisk",
 	"background": {
-		"scripts": ["background.js"],
+		"scripts": ["utilities.js", "recipe.js", "recipe_factory.js", "whisk-ci-extension.js", "background.js"],
 		"persistent": false
 	},
 	"content_scripts": [
 		{
 			"matches": ["*://*.cooksillustrated.com/*", "*://*.cookscountry.com/*", "*://*.americastestkitchen.com/*"],
 			"css": [],
-			"js": ["cooks-illustrated.js"]
+			"js": ["recipe.js", "utilities.js", "cooks-illustrated.js"]
+		},
+		{
+			"matches": ["*://my.whisk.com/recipes/new*"],
+			"include_globs": ["*://my.whisk.com/recipes/new*recipe_to_save=*"],
+			"css": [],
+			"js": ["recipe.js", "utilities.js", "whisk-add-recipe.js"]
 		}
 	],
 	"page_action": {
 		"default_popup": "popup.html",
 		"default_icon": {
-      "16": "images/get_started16.png",
-      "32": "images/get_started32.png",
-      "48": "images/get_started48.png",
-      "128": "images/get_started128.png"
+      "16": "images/Orion_balloon-whisk-bw-16.png",
+      "32": "images/Orion_balloon-whisk-bw-32.png",
+      "48": "images/Orion_balloon-whisk-bw-48.png"
     }
 	},
 	"icons": {
-    "16": "images/get_started16.png",
-    "32": "images/get_started32.png",
-    "48": "images/get_started48.png",
-    "128": "images/get_started128.png"
+		"16": "images/Orion_balloon-whisk-16.png",
+		"32": "images/Orion_balloon-whisk-32.png",
+		"48": "images/Orion_balloon-whisk-48.png",
+		"128": "images/Orion_balloon-whisk-128.png"
   },
 	"permissions": ["storage", "declarativeContent", "activeTab"],
 	"manifest_version": 2

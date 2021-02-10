@@ -53,11 +53,19 @@ Enhancements to above flow.
 Packaging for self.
 Packaging for others?
 
-## QUESTIONS
+# QUESTIONS
 
 * What's the difference between using chromes.tab.query with active window and active tab true vs. using chrome.tabs.getSelected (per https://stackoverflow.com/questions/32777310/messaging-between-content-script-and-background-page-in-a-chrome-extension-is-no/32779463) [latter deprecated]
 * Should ShowPageAction be graying out the icon or do I need to do that explicitly myself?
 
-## NOTES
+# NOTES
 
 * OAuth library linked from Chrome extension docs: http://unitedheroes.net/OAuthSimple/js/OAuthSimple.js
+
+# TODO
+
+* Parse duration
+
+# Alternative
+
+If I'm not able to get access to the Whisk.com API, another option is to parse recipes & save them to local storage and then operate as a form-filler on whisk.com's Add Recipe page to automate adding material. This will be a bit challenging for something like getting images in. Another option will be to mimic the API calls that the Whisk.com UI is already doing for my user, though obviously this doesn't give a well-architected, secure, or sharable solution.
